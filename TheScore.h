@@ -1,5 +1,5 @@
 
-
+// Class of score
 class Score {
 private:
 	int PlayerXScore;

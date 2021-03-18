@@ -12,8 +12,8 @@
 // Create score instance as global variable
 Score score(0, 0);
 
+// For lock so inaccessible to another thread 
 std::mutex m;
-int historyRandom = 0;
 
 // Random Hits
 void RandomizePlayerHits(Player* thePlayer, bool* isOver) {
@@ -26,8 +26,8 @@ void RandomizePlayerHits(Player* thePlayer, bool* isOver) {
 	thePlayer->SetHits(rand() % 101);
 	m.unlock();
 	
-	// Untuk UI
-	std::cout << "Hits Value : " << thePlayer->GetHits() << " # ";
+	// For UI
+	std::cout << " Hits Value : " << thePlayer->GetHits() << " # ";
 	if (thePlayer->GetPlayers() == 0) {
 		std::cout << " Player X ";
 	}
@@ -35,7 +35,7 @@ void RandomizePlayerHits(Player* thePlayer, bool* isOver) {
 		std::cout << " Player Y ";
 	}
 
-
+	// Miss pong
 	if(thePlayer->GetHits() <= 50) {
 		// Update score + 1 to opponent score
 		if (thePlayer->GetPlayers() == 0) {
@@ -49,14 +49,16 @@ void RandomizePlayerHits(Player* thePlayer, bool* isOver) {
 		// End of the round
 		*isOver = true;
 	}
+	// Hit pong
 	else {
 		std::cout << "Hit\n";
 	}
 
+	// Slow down proccess
 	std::this_thread::sleep_for(std::chrono::milliseconds(800));
 }
 
-// Random First Turn
+// Help randomize First Turn
 void randomFirstTurn(int* alpha) {
 	int* temp = new int;
 	srand((int)temp);
@@ -77,7 +79,7 @@ int main()
 
 
 	int roundCount = 1;
-	// Simulation flow
+	// Simulation flow (Main Loop)
 	while (score.GetXScore() < 10 && score.GetYScore() < 10) {
 		// Start from random player, player X or player Y
 		int randomStart;
@@ -85,39 +87,53 @@ int main()
 		randomFirst.join();
 		bool roundIsOver = false;
 		
+		// For UI
 		std::cout << "\nRound " << roundCount << "\n";
+		// Rounds Loop
 		while (roundIsOver == false) {
 			if (randomStart == 0) { // Player X first
+				// For UI
+				std::cout << "Start From Player X\n";
 				
+				// Player x Thread 
 				std::thread playerXThread(RandomizePlayerHits, &playerX, &roundIsOver);
 				playerXThread.join();
 
+				// Check miss or not
 				if (roundIsOver == true) {
 					roundCount++;
 					break;
 				}			
 				
+				// Player Y Thread
 				std::thread playerYThread(RandomizePlayerHits, &playerY, &roundIsOver);
 				playerYThread.join();
 
+				// Check miss or not
 				if (roundIsOver == true) {
 					roundCount++;
 					break;
 				}
 			}
 			else if (randomStart == 1) { // Player Y first
+				// For UI
+				std::cout << "Start From Player Y\n";
 
+				// Player Y Thread
 				std::thread playerYThread(RandomizePlayerHits, &playerY, &roundIsOver);
 				playerYThread.join();
 				
+				// Check miss or not
 				if (roundIsOver == true) {
 					roundCount++;
 					break;
 				}
 
+				// Player X Thread
 				std::thread playerXThread(RandomizePlayerHits, &playerX, &roundIsOver);
 				playerXThread.join();
 
+				// Check miss or not
 				if (roundIsOver == true) {
 					roundCount++;
 					break;
@@ -126,6 +142,7 @@ int main()
 		}
 	}
 
+	// Show the final score at the end of the game
 	if (score.GetXScore() >= 10) {
 		std::cout << "\nPlayer X win  " << score.GetXScore() << "-" << score.GetYScore();
 	}

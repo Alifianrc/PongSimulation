@@ -1,6 +1,6 @@
 
 
-
+// Class of Player
 class Player {
 private:
 	enum Players { PlayerX, PlayerY } thePlayer;
